@@ -30,6 +30,6 @@ figure, scatter(results.model{1}.x0, results.model{1}.y0)
 datafiles = fullfile(prfRootPath, 'local', 'vista2test_Data.nii.gz');
 stimfiles = fullfile(prfRootPath, 'local', 'vista2test_Stim.nii.gz');
 stimradius = 10;
-results = prfVistasoft(stimfiles, datafiles, stimradius, 'wsearch', 'coarse', 'css');
+results = prfVistasoft(stimfiles, datafiles, stimradius, 'wsearch', 'coarse', 'model, 'css');
 figure, scatter(results.model{1}.x0, results.model{1}.y0)
 ```
