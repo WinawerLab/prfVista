@@ -7,7 +7,17 @@ function results = prfVistasoft(stimfiles, datafiles, stimradius, varargin)
 %   datafiles:  path to one or more files with BOLD time series, char or
 %                   cell of chars
 %   stimradius: radius in degrees, scalar 
-%   varargin
+%   varargin:   input pairs for <model>, <wsearch>, <detrend>, <keepallPoints>, <numberStimulusGridPoints>
+%                   These are optional inputs to rmMain. 
+%   TODO: Update this function to simply pass all paired arguments to rmMain. No need to parse them here.
+%
+% Outputs
+%   results:    mrVista data structure with model results and model parameters
+%
+% Examples:
+%   results = prfVistasoft(fullfile(prfRootPath, 'local', 'vista2test_Stim.nii.gz'), fullfile(prfRootPath, 'local', 'vista2test_Data.nii.gz'), 10);
+%   
+%   See README.md for several more detailed examples
 
 
 % First clear the workspace just in case
@@ -45,20 +55,8 @@ else
 end
 
 
-% TODO: write all options for wSearch and model
-
-%   wSearch     : 1 = grid search only ("coarse"),
-%                 2 = minimization search only ("fine"),
-%                 3 = grid followed by minimization search [default]
-%                 4 = grid followed by two minimization searches, the first
-%                     with temporal decimation, the second without.
-%                 5 = grid followed by two minimization searches, followed
-%                     by HRF search, followed by PRF search
-
-
 
 %% Set up files and directories
-
 homedir = fullfile(tempdir, 'vistaPRF');
 mkdir(homedir)
 cd(homedir);
@@ -67,7 +65,7 @@ if exist(fullfile(homedir,'Raw'),'dir');warning('RAW DIR EXISTS');end
 mkdir(fullfile(homedir, 'Raw'));
 mkdir(fullfile(homedir, 'Stimuli'));
 
-% move the data into the new directories
+%% move the data into the new directories
 for ii = 1:numscans
     fprintf('[pmVistasoft] Stim path %d: %s\n',ii, stimfiles{ii})
     fprintf('[pmVistasoft] Data path %d: %s\n',ii, datafiles{ii})
@@ -100,6 +98,7 @@ for ii = 1:numscans
     stimfileMat{ii} = fullfile('.', 'Stimuli', sprintf('images_and_params_scan%d', ii));
     save(stimfileMat{ii}, 'images', 'stimulus');
 end
+
 %% create a pseudo inplane underlay, required by vistasoft, by averaging the
 %   time series for each voxel
 fmri        = niftiRead(datafiles{1});
@@ -200,21 +199,9 @@ vw = rmMain(vw, [], wSearch, ...
             'numberStimulusGridPoints', numberStimulusGridPoints);
 
 % Load the results        
-
-
 d = dir(fullfile(dataDir(vw), sprintf('%s*', 'tmpResults')));
 [~,newestIndex] = max([d.datenum]);
 results = load(fullfile(dataDir(vw), d(newestIndex).name));
-
-% Examples below, delete at some point
-%{
-vw = rmMain(vw, [], 'coarse to fine and hrf', ...
-    'model', {'one gaussian'}, 'matFileName', 'rm-linear-isotropic');
-
-% note the hrf search does not currently work for css model: fix it!
-vw = rmMain(vw, [], 'coarse to fine', ...
-    'model', {'css'}, 'matFileName', 'rm-css-isotropic');
-%}
 
 %% Delete all global variables created by mrVista
 mrvCleanWorkspace
@@ -224,7 +211,7 @@ cd(homedir)
 cd('../')
 rmdir(homedir, 's')
 
-%% TODO: Convert results to mgz?
+%% TODO: Convert results to mgz or some other standardized format?
 
 
 
