@@ -35,8 +35,10 @@ p.addParameter('detrend'      , 1               , @isnumeric);
 p.addParameter('keepAllPoints', true            , @islogical);
 p.addParameter('numberStimulusGridPoints', 50   , @isnumeric);
 p.addParameter('tr', 1                          , @isnumeric);
+p.addParameter('hrfparams', 'two gammas (SPM style)', @ischar);
 
 p.parse(stimfiles, datafiles, stimradius, varargin{:});
+
 % Assign it
 model         = p.Results.model;
 wSearch       = p.Results.wsearch;
@@ -44,6 +46,7 @@ detrend       = p.Results.detrend;
 keepAllPoints = p.Results.keepAllPoints;
 numberStimulusGridPoints = p.Results.numberStimulusGridPoints;
 tr            = p.Results.tr;
+hrfparams     = p.Results.hrfparams;
 
 % How many scans?
 if iscell(stimfiles)
@@ -172,8 +175,8 @@ for ii = 1:length(sParams)
     % 'thresholdedBinary',  whenreading in images, treat any pixel value
     %                       different from background as a 1, else 0
     sParams(ii).imFilter   = 'none';
-    % we switch from the default positive Boynton hRF to the biphasic SPM style
-    sParams(ii).hrfType    = 'two gammas (SPM style)';
+    % this is a string. see hrfGet for possible values.
+    sParams(ii).hrfType    = hrfparams;
     % pre-scan duration will be stored in frames for the rm, but was stored in
     % seconds in the stimulus file
     sParams(ii).prescanDuration = 0;
