@@ -36,17 +36,21 @@ p.addParameter('keepAllPoints', true            , @islogical);
 p.addParameter('numberStimulusGridPoints', 50   , @isnumeric);
 p.addParameter('tr', 1                          , @isnumeric);
 p.addParameter('hrfparams', 'two gammas (SPM style)', @ischar);
+p.addParameter('decimate'      , 2               , @isnumeric);
+p.addParameter('calcPC'        , true            , @islogical);
 
 p.parse(stimfiles, datafiles, stimradius, varargin{:});
 
 % Assign it
-model         = p.Results.model;
-wSearch       = p.Results.wsearch;
-detrend       = p.Results.detrend;
-keepAllPoints = p.Results.keepAllPoints;
-numberStimulusGridPoints = p.Results.numberStimulusGridPoints;
-tr            = p.Results.tr;
-hrfparams     = p.Results.hrfparams;
+model          = p.Results.model;
+wSearch        = p.Results.wsearch;
+detrend        = p.Results.detrend;
+keepAllPoints  = p.Results.keepAllPoints;
+numGridPoints  = p.Results.numberStimulusGridPoints;
+tr             = p.Results.tr;
+hrfparams      = p.Results.hrfparams;
+decimatefactor = p.Results.decimate;
+calcPC         = p.Results.calcPC;
 
 % How many scans?
 if iscell(stimfiles)
@@ -186,10 +190,8 @@ dataTYPES = dtSet(dataTYPES, 'rm stim params', sParams);
 
 saveSession();
 % Check it
-vw = rmLoadParameters(vw);
-
-% edit GLU: this is opening a new window, hide it
-% [~, M] = rmStimulusMatrix(viewGet(vw, 'rmparams'), [], [], 1, false);
+%   vw = rmLoadParameters(vw);
+%   [~, M] = rmStimulusMatrix(viewGet(vw, 'rmparams'), [], [], 1, false);
 
 
 %% Solve prf Models
@@ -199,7 +201,9 @@ vw = rmMain(vw, [], wSearch, ...
             'model', {model}, ...
             'matFileName', 'tmpResults', ...
             'keepAllPoints', keepAllPoints, ...
-            'numberStimulusGridPoints', numberStimulusGridPoints);
+            'numberStimulusGridPoints', numGridPoints, ...
+            'decimate', decimatefactor, ...
+            'calcPC', calcPC);
 
 % Load the results        
 d = dir(fullfile(dataDir(vw), sprintf('%s*', 'tmpResults')));
