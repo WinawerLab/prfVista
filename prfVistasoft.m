@@ -30,14 +30,15 @@ p.addRequired('stimfiles'                       , @(x) or(ischar(x), iscell(x)))
 p.addRequired('datafiles'                       , @(x) or(ischar(x), iscell(x)));
 p.addRequired('stimradius'                      , @isnumeric);
 p.addParameter('model'        , 'one gaussian'  , @ischar);
-p.addParameter('wsearch'      , 'coarse to fine', @ischar);
+p.addParameter('wsearch'      , 'coarse to fine', @(x) or(ischar(x),isnumeric(x)));
 p.addParameter('detrend'      , 1               , @isnumeric);
 p.addParameter('keepAllPoints', true            , @islogical);
 p.addParameter('numberStimulusGridPoints', 50   , @isnumeric);
 p.addParameter('tr', 1                          , @isnumeric);
-p.addParameter('hrfparams', 'two gammas (SPM style)', @ischar);
+p.addParameter('hrftype', 'two gammas (SPM style)', @ischar);
 p.addParameter('decimate'      , 2               , @isnumeric);
 p.addParameter('calcPC'        , true            , @islogical);
+p.addParameter('hrfparams', {'two gammas (SPM style)', [5.4 5.2 10.8 7.35 0.35]}, @iscell);
 
 p.parse(stimfiles, datafiles, stimradius, varargin{:});
 
@@ -48,9 +49,10 @@ detrend        = p.Results.detrend;
 keepAllPoints  = p.Results.keepAllPoints;
 numGridPoints  = p.Results.numberStimulusGridPoints;
 tr             = p.Results.tr;
-hrfparams      = p.Results.hrfparams;
+hrftype        = p.Results.hrftype;
 decimatefactor = p.Results.decimate;
 calcPC         = p.Results.calcPC;
+hrfparams      = p.Results.hrfparams;
 
 % How many scans?
 if iscell(stimfiles)
@@ -180,7 +182,7 @@ for ii = 1:length(sParams)
     %                       different from background as a 1, else 0
     sParams(ii).imFilter   = 'none';
     % this is a string. see hrfGet for possible values.
-    sParams(ii).hrfType    = hrfparams;
+    sParams(ii).hrfType    = hrftype;
     % pre-scan duration will be stored in frames for the rm, but was stored in
     % seconds in the stimulus file
     sParams(ii).prescanDuration = 0;
@@ -203,7 +205,7 @@ vw = rmMain(vw, [], wSearch, ...
             'keepAllPoints', keepAllPoints, ...
             'numberStimulusGridPoints', numGridPoints, ...
             'decimate', decimatefactor, ...
-            'calcPC', calcPC);
+            'calcPC', calcPC, 'hrf', hrfparams);
 
 % Load the results        
 d = dir(fullfile(dataDir(vw), sprintf('%s*', 'tmpResults')));
